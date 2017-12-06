@@ -80,3 +80,11 @@ config :appsignal, :config,
   active: true
 
 config :tilex, :page_size, 50
+
+# We register Rollbax.Logger as a Logger backend.
+config :logger,
+  backends: [Rollbax.Logger]
+
+# We configure the Rollbax.Logger backend.
+config :logger, Rollbax.Logger,
+  level: :error
