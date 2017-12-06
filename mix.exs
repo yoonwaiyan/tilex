@@ -18,7 +18,7 @@ defmodule Tilex.Mixfile do
   # Type `mix help compile.app` for more information.
   def application do
     [mod: {Tilex, []},
-     extra_applications: [:logger, :appsignal]]
+     extra_applications: [:logger, :appsignal, :rollbax]]
   end
 
   # Specifies which paths to compile per environment.
@@ -52,6 +52,7 @@ defmodule Tilex.Mixfile do
       {:timex, "~> 3.1"},
       {:ueberauth_google, "~> 0.5"},
       {:wallaby, "~> 0.19.1", only: :test},
+      {:rollbax, "~> 0.6"},
     ]
   end
 
