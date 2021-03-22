@@ -65,12 +65,7 @@ defmodule Tilex.Mixfile do
       {:timex, "~> 3.1"},
       {:tzdata, "~> 1.0.1"},
       {:ueberauth_google, "~> 0.5"},
-<<<<<<< HEAD
-      {:wallaby, "~> 0.19.1", only: :test},
-      {:rollbax, "~> 0.6"},
-=======
       {:wallaby, "~> 0.23.0", [runtime: false, only: :test]}
->>>>>>> upstream/master
     ]
   end
 
