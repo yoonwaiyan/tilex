@@ -11,17 +11,18 @@
 //
 // If you no longer want to use a dependency, remember
 // to also remove its path from "config.paths.watched".
-import "phoenix_html";
-import $ from "jquery";
-import "jquery.cookie";
+import 'phoenix_html';
+import $ from 'jquery';
+import 'jquery.cookie';
 
 // Import local files
 //
 // Local files can be imported directly using relative
 // paths "./socket" or full ones "web/static/js/socket".
+import css from '../css/app.scss';
 
 // import socket from "./socket"
-import "./syntax_label";
-import tilex from "./tilex";
-import like from "./like";
-import twitter from "./twitter_button";
+import tilex from './tilex';
+import like from './like';
+import twitter from './twitter_button';
+import prism from '../vendor/js/prism';

@@ -1,5 +1,5 @@
 defmodule Tilex.PostTest do
-  use Tilex.ModelCase
+  use Tilex.ModelCase, async: true
 
   alias Tilex.Post
 
@@ -15,13 +15,13 @@ defmodule Tilex.PostTest do
   @invalid_attrs_title %{
     body: "some content",
     title: "You'll never believe what a long, verbose title this is.",
-    channel_id: 1,
+    channel_id: 1
   }
 
   @invalid_attrs_body %{
     body: String.duplicate("wordy ", 205),
     title: "some content",
-    channel_id: 1,
+    channel_id: 1
   }
 
   test "changeset with valid attributes" do
@@ -59,5 +59,19 @@ defmodule Tilex.PostTest do
     title = "Hacking Your Shower!!!"
     result = "hacking-your-shower"
     assert Post.slugified_title(title) == result
+  end
+
+  test "generate_slug/0" do
+    slug_regex = ~r/[a-z0-9]/
+    slug = Post.generate_slug()
+
+    assert String.length(slug) == 10
+    assert String.match?(slug, slug_regex)
+
+    another_slug = Post.generate_slug()
+
+    assert String.length(another_slug) == 10
+    assert String.match?(another_slug, slug_regex)
+    refute slug == another_slug
   end
 end

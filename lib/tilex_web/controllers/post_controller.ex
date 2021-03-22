@@ -3,7 +3,6 @@ defmodule TilexWeb.PostController do
   import Ecto.Query
 
   alias Guardian.Plug
-  alias Phoenix.Controller
   alias Tilex.{Channel, Notifications, Liking, Post, Posts}
 
   plug(:load_channels when action in [:new, :create, :edit, :update])
@@ -11,23 +10,22 @@ defmodule TilexWeb.PostController do
 
   plug(
     Plug.EnsureAuthenticated,
-    [handler: __MODULE__]
+    [error_handler: __MODULE__]
     when action in ~w(new create edit update)a
   )
 
-  def unauthenticated(conn, _) do
+  @behaviour Guardian.Plug.ErrorHandler
+
+  @impl Guardian.Plug.ErrorHandler
+  def auth_error(conn, {_failure_type, _reason}, _opts) do
     conn
     |> put_status(302)
     |> put_flash(:info, "Authentication required")
-    |> redirect(to: "/")
+    |> redirect(to: post_path(conn, :index))
   end
 
   def index(conn, %{"q" => search_query} = params) do
-    page =
-      params
-      |> Map.get("page", "1")
-      |> String.to_integer()
-
+    page = robust_page(params)
     {posts, posts_count} = Posts.by_search(search_query, page)
 
     render(
@@ -41,22 +39,16 @@ defmodule TilexWeb.PostController do
   end
 
   def index(conn, %{"format" => format}) when format in ~w(rss atom),
-    do: redirect(conn, to: "/rss")
+    do: redirect(conn, to: feed_path(conn, :index))
 
   def index(conn, params) do
-    page =
-      params
-      |> Map.get("page", "1")
-      |> String.to_integer()
-
+    page = robust_page(params)
     posts = Posts.all(page)
 
     render(conn, "index.html", posts: posts, page: page)
   end
 
   def show(%{assigns: %{slug: slug}} = conn, _) do
-    format = Controller.get_format(conn)
-
     post =
       Post
       |> Repo.get_by!(slug: slug)
@@ -66,7 +58,7 @@ defmodule TilexWeb.PostController do
     conn
     |> assign_post_canonical_url(post)
     |> assign(:twitter_shareable, true)
-    |> render("show.#{format}", post: post)
+    |> render(:show, post: post)
   end
 
   def random(conn, _) do
@@ -101,7 +93,7 @@ defmodule TilexWeb.PostController do
 
     conn
     |> put_resp_content_type("application/json")
-    |> send_resp(200, Poison.encode!(%{likes: likes}))
+    |> send_resp(200, Jason.encode!(%{likes: likes}))
   end
 
   def unlike(conn, %{"slug" => slug}) do
@@ -109,16 +101,18 @@ defmodule TilexWeb.PostController do
 
     conn
     |> put_resp_content_type("application/json")
-    |> send_resp(200, Poison.encode!(%{likes: likes}))
+    |> send_resp(200, Jason.encode!(%{likes: likes}))
   end
 
-  def create(conn, %{"post" => post_params}) do
+  def create(conn, %{"post" => params}) do
     developer = Plug.current_resource(conn)
 
-    changeset =
-      %Post{}
-      |> Map.put(:developer_id, developer.id)
-      |> Post.changeset(post_params)
+    sanitized_params =
+      params
+      |> post_params()
+      |> Map.merge(%{"developer_id" => developer.id})
+
+    changeset = Post.changeset(%Post{}, sanitized_params)
 
     case Repo.insert(changeset) do
       {:ok, post} ->
@@ -159,7 +153,7 @@ defmodule TilexWeb.PostController do
     |> render("edit.html")
   end
 
-  def update(conn, %{"post" => post_params}) do
+  def update(conn, %{"post" => params}) do
     current_user = Plug.current_resource(conn)
 
     post =
@@ -173,7 +167,9 @@ defmodule TilexWeb.PostController do
           Repo.get_by!(Post, slug: conn.assigns.slug)
       end
 
-    changeset = Post.changeset(post, post_params)
+    sanitized_params = post_params(params)
+
+    changeset = Post.changeset(post, sanitized_params)
 
     case Repo.update(changeset) do
       {:ok, post} ->
@@ -182,7 +178,7 @@ defmodule TilexWeb.PostController do
         |> redirect(to: post_path(conn, :show, post))
 
       {:error, changeset} ->
-        render(conn, "edit.html", post: post, changeset: changeset)
+        render(conn, "edit.html", post: post, changeset: changeset, current_user: current_user)
     end
   end
 
@@ -204,7 +200,8 @@ defmodule TilexWeb.PostController do
       :error ->
         conn
         |> put_status(404)
-        |> render(TilexWeb.ErrorView, "404.html")
+        |> put_view(TilexWeb.ErrorView)
+        |> render("404.html")
         |> halt()
     end
   end
@@ -221,5 +218,18 @@ defmodule TilexWeb.PostController do
 
     conn
     |> assign(:canonical_url, canonical_post)
+  end
+
+  defp robust_page(%{"page" => page}) do
+    case Integer.parse(page) do
+      :error -> 1
+      {integer, _remainder} -> integer
+    end
+  end
+
+  defp robust_page(_params), do: 1
+
+  defp post_params(params) do
+    Map.take(params, ["body", "channel_id", "title"])
   end
 end
