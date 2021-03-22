@@ -52,5 +52,6 @@
     {
       "url": "https://github.com/gjaldon/heroku-buildpack-phoenix-static.git"
     }
-  ]
+  ],
+  "stack": "heroku-20"
 }
