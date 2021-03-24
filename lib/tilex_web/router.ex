@@ -1,5 +1,6 @@
 defmodule TilexWeb.Router do
   use TilexWeb, :router
+  use Honeybadger.Plug
 
   @auth_controller Application.get_env(:tilex, :auth_controller)
 
