@@ -84,10 +84,6 @@ config :extwitter, :oauth,
   access_token: System.get_env("twitter_access_token"),
   access_token_secret: System.get_env("twitter_access_token_secret")
 
-config :rollbax,
-  access_token: "05ee0477cb68412285bc7eba798051ae",
-  environment: "production"
-
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"
