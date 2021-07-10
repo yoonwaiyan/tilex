@@ -1,10 +1,7 @@
 defmodule Tilex.Notifications.NotifiersSupervisor do
-  @slack_notifier Application.get_env(:tilex, :slack_notifier)
-  @twitter_notifier Application.get_env(:tilex, :twitter_notifier)
-
   use Supervisor
 
-  def start_link() do
+  def start_link([]) do
     Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
@@ -14,8 +11,11 @@ defmodule Tilex.Notifications.NotifiersSupervisor do
 
   def children do
     [
-      @slack_notifier,
-      @twitter_notifier
+      slack_notifier(),
+      twitter_notifier()
     ]
   end
+
+  defp slack_notifier, do: Application.get_env(:tilex, :slack_notifier)
+  defp twitter_notifier, do: Application.get_env(:tilex, :twitter_notifier)
 end
