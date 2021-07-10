@@ -1,6 +1,5 @@
 defmodule Tilex.TextConverterChannel do
   use Phoenix.Channel
-  use Appsignal.Instrumentation.Decorators
 
   alias Tilex.Markdown
 
@@ -8,7 +7,6 @@ defmodule Tilex.TextConverterChannel do
     {:ok, socket}
   end
 
-  @decorate channel_action()
   def handle_in("convert", %{"markdown" => markdown}, socket) do
     html = Markdown.to_html_live(markdown)
 

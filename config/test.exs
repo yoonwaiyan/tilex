@@ -16,7 +16,7 @@ config :tilex, Tilex.Repo,
   adapter: Ecto.Adapters.Postgres,
   database: "tilex_test",
   hostname: "localhost",
-  username: "postgres",
+  username: "yoonwaiyan",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: 50,
   timeout: 30_000
@@ -44,5 +44,3 @@ config :wallaby,
   screenshot_on_failure: true
 
 config :tilex, :request_tracking, true
-
-config :appsignal, :config, active: false
